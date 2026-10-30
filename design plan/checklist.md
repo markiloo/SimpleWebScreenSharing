@@ -20,6 +20,7 @@
 - [ ] On a Start click, call `getDisplayMedia` with video and system-audio options, prompting the host to choose the primary monitor and enable audio.
 - [ ] Check the returned tracks and show **No audio** if the browser provides video only.
 - [ ] Create one WebRTC peer connection per viewer and add the captured tracks to each connection.
+- [ ] Set practical capture frame-rate and video bitrate limits, prioritizing stable playback over minimum delay.
 - [ ] Stop all tracks and close peer connections when sharing stops or browser capture ends.
 
 ## 4. Build the viewer page
@@ -34,6 +35,7 @@
 - [ ] Write a README with installation, startup, the host URL, and the LAN viewer URL.
 - [ ] Explain how to find the host's LAN IP and allow port 3000 through Windows Firewall if needed.
 - [ ] Verify screen motion and computer audio from another LAN computer using desktop Chrome or Edge.
+- [ ] Check that normal LAN playback stays within roughly 10 seconds of the host screen without repeated stalls; adjust capture quality if needed.
 - [ ] Verify that video-only sharing works and clearly reports missing audio.
 - [ ] Verify three simultaneous viewers, fourth-viewer rejection, viewer refresh, and freed slots after disconnect.
 - [ ] Verify that Stop sharing and browser capture ending disconnect viewers and release capture tracks.
