@@ -1,4 +1,5 @@
 const http = require('node:http');
+const dgram = require('node:dgram');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
@@ -23,7 +24,7 @@ function isLoopback(address) {
 const VIRTUAL_INTERFACE = /(virtualbox|vbox|vmware|docker|wsl|hyper-v|vethernet|loopback|tailscale|zerotier|bluetooth|npcap)/i;
 const PRIVATE_IPV4 = /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/;
 
-function findLanAddress() {
+async function findLanAddress() {
   const candidates = [];
   for (const [name, entries] of Object.entries(os.networkInterfaces())) {
     for (const entry of entries || []) {
@@ -31,6 +32,30 @@ function findLanAddress() {
       candidates.push({ name, address: entry.address });
     }
   }
+
+  // Ask the OS which IPv4 interface it would use for an outbound route.
+  // UDP connect selects a local interface without sending a packet.
+  const routedAddress = await new Promise((resolve) => {
+    const socket = dgram.createSocket('udp4');
+    let settled = false;
+    const finish = (address = null) => {
+      if (settled) return;
+      settled = true;
+      try {
+        socket.close(() => resolve(address));
+      } catch {
+        resolve(address);
+      }
+    };
+    socket.once('error', () => finish());
+    try {
+      socket.connect(9, '192.0.2.1', () => finish(socket.address().address));
+    } catch {
+      finish();
+    }
+  });
+  if (routedAddress && PRIVATE_IPV4.test(routedAddress)) return routedAddress;
+
   const preferred = candidates.find(({ name, address }) => !VIRTUAL_INTERFACE.test(name) && PRIVATE_IPV4.test(address));
   if (preferred) return preferred.address;
   const physical = candidates.find(({ name }) => !VIRTUAL_INTERFACE.test(name));
@@ -130,7 +155,7 @@ function createApp() {
     socket.on('error', () => removeViewer(id));
   });
 
-  const server = http.createServer((request, response) => {
+  const server = http.createServer(async (request, response) => {
     if (request.method !== 'GET') {
       response.writeHead(405, { Allow: 'GET' }).end();
       return;
@@ -145,7 +170,7 @@ function createApp() {
         response.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' }).end('Host controls are local only.');
         return;
       }
-      const address = findLanAddress();
+      const address = await findLanAddress();
       const port = server.address()?.port ?? DEFAULT_PORT;
       response.writeHead(200, {
         'Content-Type': 'application/json; charset=utf-8',

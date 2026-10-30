@@ -84,6 +84,12 @@ async function createPeer(viewerId) {
           parameters.encodings[0].maxFramerate = 20;
           try { await sender.setParameters(parameters); } catch { /* Browser defaults remain usable. */ }
         }
+      } else if (track.kind === 'audio') {
+        const parameters = sender.getParameters();
+        if (parameters.encodings?.length) {
+          parameters.encodings[0].maxBitrate = 160_000;
+          try { await sender.setParameters(parameters); } catch { /* Browser defaults remain usable. */ }
+        }
       }
     }
     send({ type: 'stream-info', viewerId, hasAudio: captureStream.getAudioTracks().some((track) => track.readyState === 'live') });
