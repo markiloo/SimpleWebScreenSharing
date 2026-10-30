@@ -8,31 +8,96 @@
   <script src="/host.js" defer></script>
 </head>
 <body>
+  <header class="topbar">
+    <span class="brand"><span class="brand-mark" aria-hidden="true"></span>LAN Screen Share</span>
+    <span class="topbar-meta">
+      <span class="tag accent">Host</span>
+      <span class="tag">Local only</span>
+    </span>
+  </header>
+
   <main class="shell">
     <header class="heading">
-      <span class="eyebrow">LAN SCREEN SHARE</span>
+      <span class="eyebrow">Share your screen</span>
       <h1>Share this computer</h1>
-      <p>Choose your primary screen and turn on system audio in the browser's sharing prompt.</p>
+      <p>Choose your primary screen and turn on system audio in the browser's sharing prompt. Up to three people on your network can watch.</p>
     </header>
 
-    <section class="card controls" aria-label="Sharing controls">
-      <div class="status-row">
-        <span id="status" class="status" role="status" aria-live="polite">Ready to share</span>
-        <span id="audio-status" class="pill">Audio not started</span>
+    <div class="host-grid">
+      <section class="card controls" aria-label="Sharing controls">
+        <div class="status-row">
+          <span class="status">
+            <span id="status-dot" class="status-dot" aria-hidden="true"></span>
+            <span id="status" role="status" aria-live="polite">Ready to share</span>
+          </span>
+          <span id="audio-status" class="pill">Audio not started</span>
+        </div>
+
+        <div class="viewer-stat">
+          <span class="stat-label">Viewers</span>
+          <span class="stat-value"><strong id="viewer-count">0</strong><span class="stat-unit">of 3</span></span>
+        </div>
+
+        <label class="check-row"><input id="include-audio" type="checkbox" checked> Include computer audio</label>
+
+        <div class="actions">
+          <button id="start-button" type="button">Start sharing</button>
+          <button id="stop-button" type="button" class="secondary" disabled>Stop sharing</button>
+        </div>
+
+        <div class="link-panel">
+          <span class="label">Viewer link</span>
+          <div class="link-row">
+            <code id="viewer-url">http://&lt;your-LAN-IP&gt;:3000/</code>
+            <button id="copy-link" type="button" class="secondary small" hidden>Copy</button>
+          </div>
+          <p class="hint">Open this address on another device connected to the same network.</p>
+        </div>
+
+        <p class="hint">Keep this tab open while sharing. Host controls are restricted to this computer.</p>
+      </section>
+
+      <section class="card preview-card" id="preview-card" aria-label="Screen preview">
+        <div class="section-heading">
+          <h2>Preview</h2>
+          <span>Only you see this</span>
+        </div>
+        <div class="video-mat">
+          <div class="video-frame">
+            <video id="preview" autoplay muted playsinline></video>
+            <div class="video-placeholder">
+              <span class="placeholder-icon" aria-hidden="true"></span>
+              <strong>Your screen will appear here</strong>
+              <span>Start sharing to preview what viewers will see.</span>
+            </div>
+          </div>
+        </div>
+        <div class="preview-meta">
+          <span>Screen capture · 16:9</span>
+          <span>Preview is muted</span>
+        </div>
+      </section>
+    </div>
+
+    <section class="steps" aria-label="Quick start">
+      <div class="step">
+        <span class="step-number">1</span>
+        <div><strong>Start sharing</strong><p>Pick your primary screen in the browser prompt.</p></div>
       </div>
-      <p id="viewer-count" class="count">0 viewers connected</p>
-      <label class="check-row"><input id="include-audio" type="checkbox" checked> Include computer audio</label>
-      <div class="actions">
-        <button id="start-button" type="button">Start sharing</button>
-        <button id="stop-button" type="button" class="secondary" disabled>Stop sharing</button>
+      <div class="step">
+        <span class="step-number">2</span>
+        <div><strong>Allow audio</strong><p>Enable system audio if viewers should hear it.</p></div>
       </div>
-      <p class="hint">Keep this tab open while sharing. Viewers open <code id="viewer-url">http://&lt;your-LAN-IP&gt;:3000/</code>.</p>
+      <div class="step">
+        <span class="step-number">3</span>
+        <div><strong>Share the link</strong><p>Send the viewer address to people on your LAN.</p></div>
+      </div>
     </section>
 
-    <section class="card preview-card" aria-label="Screen preview">
-      <div class="section-heading"><h2>Preview</h2><span>Only you see this preview</span></div>
-      <div class="video-frame"><video id="preview" autoplay muted playsinline></video></div>
-    </section>
+    <footer class="footer">
+      <p>LAN Screen Share stays on your local network.</p>
+      <p>Host controls are available on this computer only.</p>
+    </footer>
   </main>
 </body>
 </html>

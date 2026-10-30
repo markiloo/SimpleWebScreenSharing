@@ -5,7 +5,11 @@ const audioLabel = document.querySelector('#audio-status');
 const viewerCountLabel = document.querySelector('#viewer-count');
 const preview = document.querySelector('#preview');
 const includeAudio = document.querySelector('#include-audio');
-document.querySelector('#viewer-url').textContent = `http://<your-LAN-IP>:${location.port || '80'}/`;
+const statusDot = document.querySelector('#status-dot');
+const previewCard = document.querySelector('#preview-card');
+const viewerUrlLabel = document.querySelector('#viewer-url');
+const copyButton = document.querySelector('#copy-link');
+viewerUrlLabel.textContent = `http://<your-LAN-IP>:${location.port || '80'}/`;
 
 let captureStream = null;
 let signaling = null;
@@ -13,8 +17,9 @@ let peers = new Map();
 let pendingCandidates = new Map();
 let starting = false;
 
-function setStatus(message) {
+function setStatus(message, state = 'idle') {
   statusLabel.textContent = message;
+  statusDot.className = state === 'idle' ? 'status-dot' : `status-dot ${state}`;
 }
 
 function setAudioStatus(hasAudio) {
@@ -45,10 +50,11 @@ function stopSharing(message = 'Sharing stopped') {
     captureStream = null;
   }
   preview.srcObject = null;
+  previewCard.classList.remove('is-live');
   startButton.disabled = false;
   stopButton.disabled = true;
   includeAudio.disabled = false;
-  viewerCountLabel.textContent = '0 viewers connected';
+  viewerCountLabel.textContent = '0';
   audioLabel.textContent = 'Audio not started';
   audioLabel.className = 'pill';
   setStatus(message);
@@ -96,7 +102,7 @@ function handleSignal(message) {
   } else if (message.type === 'viewer-left') {
     closePeer(message.viewerId);
   } else if (message.type === 'viewer-count') {
-    viewerCountLabel.textContent = `${message.count} viewer${message.count === 1 ? '' : 's'} connected`;
+    viewerCountLabel.textContent = String(message.count);
   } else if (message.type === 'answer') {
     const peer = peers.get(message.viewerId);
     if (peer && peer.signalingState === 'have-local-offer') {
@@ -151,7 +157,7 @@ async function startSharing() {
   starting = true;
   startButton.disabled = true;
   includeAudio.disabled = true;
-  setStatus(includeAudio.checked ? 'Choose your primary screen and enable system audio…' : 'Choose your primary screen…');
+  setStatus(includeAudio.checked ? 'Choose your primary screen and enable system audio…' : 'Choose your primary screen…', 'pending');
   try {
     const stream = await navigator.mediaDevices.getDisplayMedia({
       video: { displaySurface: 'monitor', frameRate: { ideal: 20, max: 24 } },
@@ -175,13 +181,14 @@ async function startSharing() {
       });
     }
     preview.srcObject = stream;
+    previewCard.classList.add('is-live');
     setAudioStatus(stream.getAudioTracks().some((track) => track.readyState === 'live'));
     await connectSignaling();
     if (!captureStream || signaling?.readyState !== WebSocket.OPEN) {
       throw new Error('The local server closed the connection.');
     }
     stopButton.disabled = false;
-    setStatus('Sharing live');
+    setStatus('Sharing live', 'live');
   } catch (error) {
     stopSharing(error.name === 'NotAllowedError' ? 'Screen selection was cancelled' : error.message || 'Could not start sharing');
   } finally {
@@ -189,6 +196,45 @@ async function startSharing() {
   }
 }
 
+async function loadViewerUrl() {
+  try {
+    const response = await fetch('/api/lan-url', { headers: { Accept: 'application/json' } });
+    if (!response.ok) return;
+    const { url } = await response.json();
+    if (typeof url !== 'string' || !url) return;
+    viewerUrlLabel.textContent = url;
+    copyButton.hidden = false;
+  } catch {
+    /* Keep the placeholder link when the address is unavailable. */
+  }
+}
+
+async function copyViewerUrl() {
+  try {
+    await navigator.clipboard.writeText(viewerUrlLabel.textContent);
+    showCopied();
+    return;
+  } catch {
+    /* Fall back to selecting the link for manual copying. */
+  }
+  const range = document.createRange();
+  range.selectNodeContents(viewerUrlLabel);
+  const selection = window.getSelection();
+  selection.removeAllRanges();
+  selection.addRange(range);
+  let copied = false;
+  try { copied = document.execCommand?.('copy') ?? false; } catch { copied = false; }
+  if (copied) showCopied();
+  else copyButton.textContent = 'Press Ctrl+C';
+}
+
+function showCopied() {
+  copyButton.textContent = 'Copied';
+  window.setTimeout(() => { copyButton.textContent = 'Copy'; }, 1600);
+}
+
+loadViewerUrl();
+copyButton.addEventListener('click', copyViewerUrl);
 startButton.addEventListener('click', startSharing);
 stopButton.addEventListener('click', () => stopSharing());
 window.addEventListener('pagehide', () => stopSharing());

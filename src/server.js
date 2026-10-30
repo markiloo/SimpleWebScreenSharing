@@ -1,5 +1,6 @@
 const http = require('node:http');
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 const { URL } = require('node:url');
 const { WebSocket, WebSocketServer } = require('ws');
@@ -17,6 +18,23 @@ const ROUTES = new Map([
 
 function isLoopback(address) {
   return address === '127.0.0.1' || address === '::1' || address === '::ffff:127.0.0.1';
+}
+
+const VIRTUAL_INTERFACE = /(virtualbox|vbox|vmware|docker|wsl|hyper-v|vethernet|loopback|tailscale|zerotier|bluetooth|npcap)/i;
+const PRIVATE_IPV4 = /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/;
+
+function findLanAddress() {
+  const candidates = [];
+  for (const [name, entries] of Object.entries(os.networkInterfaces())) {
+    for (const entry of entries || []) {
+      if (entry.family !== 'IPv4' || entry.internal || entry.address.startsWith('169.254.')) continue;
+      candidates.push({ name, address: entry.address });
+    }
+  }
+  const preferred = candidates.find(({ name, address }) => !VIRTUAL_INTERFACE.test(name) && PRIVATE_IPV4.test(address));
+  if (preferred) return preferred.address;
+  const physical = candidates.find(({ name }) => !VIRTUAL_INTERFACE.test(name));
+  return physical?.address ?? candidates[0]?.address ?? null;
 }
 
 function createApp() {
@@ -120,6 +138,21 @@ function createApp() {
     let pathname;
     try { pathname = new URL(request.url, 'http://localhost').pathname; } catch {
       response.writeHead(400).end();
+      return;
+    }
+    if (pathname === '/api/lan-url') {
+      if (!isLoopback(request.socket.remoteAddress)) {
+        response.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8' }).end('Host controls are local only.');
+        return;
+      }
+      const address = findLanAddress();
+      const port = server.address()?.port ?? DEFAULT_PORT;
+      response.writeHead(200, {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'no-store',
+        'X-Content-Type-Options': 'nosniff',
+      });
+      response.end(JSON.stringify({ url: address ? `http://${address}:${port}/` : null }));
       return;
     }
     const route = ROUTES.get(pathname);

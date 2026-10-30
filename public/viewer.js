@@ -4,15 +4,21 @@ const playButton = document.querySelector('#play-button');
 const statusLabel = document.querySelector('#status');
 const audioLabel = document.querySelector('#audio-status');
 const video = document.querySelector('#stream');
+const stage = document.querySelector('#stage');
+const statusDot = document.querySelector('#status-dot');
+const placeholderTitle = document.querySelector('#placeholder-title');
+const placeholderText = document.querySelector('#placeholder-text');
 
 let signaling = null;
 let peer = null;
 let remoteStream = null;
 let closeReason = null;
 let pendingCandidates = [];
+let playAttempt = 0;
 
-function setStatus(message) {
+function setStatus(message, state = 'idle') {
   statusLabel.textContent = message;
+  statusDot.className = state === 'idle' ? 'status-dot' : `status-dot ${state}`;
 }
 
 function setAudioStatus(hasAudio) {
@@ -32,8 +38,12 @@ function leave(message = 'Left the stream') {
   peer = null;
   remoteStream = null;
   pendingCandidates = [];
+  playAttempt += 1;
   video.pause();
   video.srcObject = null;
+  stage.classList.remove('is-playing');
+  placeholderTitle.textContent = 'Not watching yet';
+  placeholderText.textContent = "Press Watch to connect to the host's screen.";
   watchButton.disabled = false;
   leaveButton.disabled = true;
   playButton.hidden = true;
@@ -43,12 +53,20 @@ function leave(message = 'Left the stream') {
 }
 
 async function playVideo() {
+  const attempt = ++playAttempt;
   try {
     await video.play();
+    if (attempt !== playAttempt || !signaling) return;
     playButton.hidden = true;
+    stage.classList.add('is-playing');
+    setStatus('Live', 'live');
   } catch {
+    if (attempt !== playAttempt || !signaling) return;
     playButton.hidden = false;
-    setStatus('Press Play / enable sound to start playback');
+    stage.classList.remove('is-playing');
+    placeholderTitle.textContent = 'Playback paused';
+    placeholderText.textContent = 'Press Play / enable sound below to start.';
+    setStatus('Press Play / enable sound to start playback', 'pending');
   }
 }
 
@@ -69,8 +87,10 @@ async function acceptOffer(sdp) {
   };
   connection.onconnectionstatechange = () => {
     if (peer !== connection) return;
-    if (connection.connectionState === 'connected') setStatus('Live');
-    else if (connection.connectionState === 'disconnected') setStatus('Connection interrupted…');
+    if (connection.connectionState === 'connected') {
+      if (stage.classList.contains('is-playing')) setStatus('Live', 'live');
+      else setStatus('Press Play / enable sound to start playback', 'pending');
+    } else if (connection.connectionState === 'disconnected') setStatus('Connection interrupted…', 'pending');
     else if (connection.connectionState === 'failed') leave('Connection failed; press Watch to retry');
   };
   try {
@@ -88,16 +108,19 @@ async function acceptOffer(sdp) {
 function watch() {
   if (signaling) return;
   closeReason = null;
+  stage.classList.remove('is-playing');
+  placeholderTitle.textContent = 'Connecting…';
+  placeholderText.textContent = 'Waiting for the host to send video.';
   watchButton.disabled = true;
   leaveButton.disabled = false;
-  setStatus('Connecting…');
+  setStatus('Connecting…', 'pending');
   const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
   const socket = new WebSocket(`${protocol}//${location.host}/signal?role=viewer`);
   signaling = socket;
   socket.onmessage = (event) => {
     let message;
     try { message = JSON.parse(event.data); } catch { return; }
-    if (message.type === 'viewer-ready') setStatus('Waiting for video…');
+    if (message.type === 'viewer-ready') setStatus('Waiting for video…', 'pending');
     else if (message.type === 'stream-info') setAudioStatus(message.hasAudio);
     else if (message.type === 'offer') acceptOffer(message.sdp);
     else if (message.type === 'ice-candidate') {

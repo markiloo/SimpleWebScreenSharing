@@ -46,6 +46,10 @@ test('HTTP routes and signaling enforce roles, viewer limit, relay, and cleanup'
     assert.equal((await fetch(`${base}/`)).status, 200);
     assert.equal((await fetch(`${base}/host`)).status, 200);
     assert.equal((await fetch(`${base}/host.js`)).status, 200);
+    const lanInfo = await fetch(`${base}/api/lan-url`);
+    assert.equal(lanInfo.status, 200);
+    const { url: lanUrl } = await lanInfo.json();
+    assert.ok(lanUrl === null || /^http:\/\/\d{1,3}(?:\.\d{1,3}){3}:\d+\/$/.test(lanUrl));
     assert.equal((await fetch(`${base}/missing`)).status, 404);
     assert.equal((await fetch(`${base}/`, { method: 'POST' })).status, 405);
 

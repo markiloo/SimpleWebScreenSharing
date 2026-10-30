@@ -8,26 +8,57 @@
   <script src="/viewer.js" defer></script>
 </head>
 <body>
+  <header class="topbar">
+    <span class="brand"><span class="brand-mark" aria-hidden="true"></span>LAN Screen Share</span>
+    <span class="topbar-meta">
+      <span class="tag accent">Viewer</span>
+      <span class="tag">Live via LAN</span>
+    </span>
+  </header>
+
   <main class="shell viewer-shell">
-    <header class="heading">
-      <span class="eyebrow">LAN SCREEN SHARE</span>
-      <h1>Watch the screen</h1>
-      <p>Live video and computer sound from the host on your local network.</p>
+    <header class="heading viewer-heading">
+      <div>
+        <span class="eyebrow">Now watching</span>
+        <h1>Watch the screen</h1>
+        <p>Live video and computer sound from the host on your local network.</p>
+      </div>
     </header>
 
-    <section class="card" aria-label="Live stream">
-      <div class="status-row">
-        <span id="status" class="status" role="status" aria-live="polite">Ready to watch</span>
-        <span id="audio-status" class="pill">Audio unknown</span>
+    <section class="card stage-card" id="stage" aria-label="Live stream">
+      <div class="stage-toolbar">
+        <span class="status">
+          <span id="status-dot" class="status-dot" aria-hidden="true"></span>
+          <span id="status" role="status" aria-live="polite">Ready to watch</span>
+        </span>
+        <span class="stage-meta">
+          <span id="audio-status" class="pill">Audio unknown</span>
+          <span class="tag">Up to 3 viewers</span>
+        </span>
       </div>
-      <div class="video-frame"><video id="stream" autoplay playsinline controls></video></div>
-      <div class="actions">
+
+      <div class="video-mat">
+        <div class="video-frame stage-frame">
+          <video id="stream" autoplay playsinline controls></video>
+          <div class="video-placeholder">
+            <span class="placeholder-icon" aria-hidden="true"></span>
+            <strong id="placeholder-title">Not watching yet</strong>
+            <span id="placeholder-text">Press Watch to connect to the host's screen.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions stage-actions">
         <button id="watch-button" type="button">Watch</button>
         <button id="play-button" type="button" class="secondary" hidden>Play / enable sound</button>
         <button id="leave-button" type="button" class="secondary" disabled>Leave</button>
       </div>
-      <p class="hint">Use the video controls to adjust volume. The host must start sharing first.</p>
+      <p class="hint">Use the video controls for volume and fullscreen. The host must start sharing first.</p>
     </section>
+
+    <footer class="footer">
+      <p>Video and audio travel directly between this device and the host.</p>
+    </footer>
   </main>
 </body>
 </html>
