@@ -18,7 +18,7 @@ npm install
 npm start
 ```
 
-Open **http://localhost:3000/host** on the host computer. Leave **Include computer audio** checked to request sound, then click **Start sharing**, choose **Entire Screen** and your primary monitor, and enable **Share system audio** if the browser offers it. Uncheck the option to share video only. Leave the host tab open. The page shows **No audio** when no audio track is captured.
+Open the localhost on the host computer with the endpoint /host. Leave **Include computer audio** checked to request sound, then click **Start sharing**, choose **Entire Screen** and your primary monitor, and enable **Share system audio** if the browser offers it. Uncheck the option to share video only. Leave the host tab open. The page shows **No audio** when no audio track is captured.
 
 Viewers open `http://<host-LAN-IP>:3000/` and click **Watch**. The host must start sharing first. Anyone on the LAN who has this URL can watch while sharing is active. Stop from the host page or Chrome's sharing indicator.
 
