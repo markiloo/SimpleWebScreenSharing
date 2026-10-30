@@ -2,19 +2,19 @@
 
 ## Project Structure & Module Organization
 
-This repository currently contains planning documents in `design plan/`: `screen-share-plan.md` defines the intended behavior, and `checklist.md` tracks implementation steps. No application source, tests, or web assets exist yet. Keep those documents aligned as the app develops. Put the future Node.js server and browser code in clearly named directories such as `src/` and `public/`; place automated tests in `test/`. Keep generated files and dependencies out of Git.
+`src/server.js` serves pages and relays WebRTC signaling. `public/` contains the host and viewer pages, browser scripts, and styles. `test/` holds Node.js integration tests. `design plan/` contains the feature plan and implementation checklist. Keep generated files and dependencies out of Git.
 
 ## Build, Test, and Development Commands
 
-There is no `package.json` or runnable app yet, so no build or test command is available. When implementing the project, add npm scripts and document them in `README.md`: `npm install` for dependencies, `npm start` for the LAN server, and `npm test` for automated checks. Commit the lockfile so contributors install the same dependency versions. The planned host page is `http://localhost:3000/host`; viewers use the host's LAN IP on port 3000.
+Run `npm ci` to install locked dependencies, `npm start` to serve on port 3000, and `npm test` to run signaling tests. No build step is required. The host page is `http://localhost:3000/host`; viewers use the host's LAN IP on port 3000. Use `PORT` to choose another port.
 
 ## Coding Style & Naming Conventions
 
-Use two-space indentation for JavaScript, descriptive `camelCase` variables and functions, and `PascalCase` classes. Use lowercase, hyphenated names for web assets. Keep signaling messages explicit about their role and target viewer. Add a formatter or linter only with a documented command; none is configured yet.
+Use two-space indentation for JavaScript, descriptive `camelCase` variables and functions, and `PascalCase` classes. Use lowercase, hyphenated names for web assets. Keep signaling messages explicit about their role and target viewer. No formatter or linter is configured; keep changes consistent with nearby code.
 
 ## Testing Guidelines
 
-No test framework or coverage threshold is established. Add focused automated tests for signaling roles, the three-viewer limit, and connection cleanup. Name tests `*.test.js`. Manually verify screen motion, computer audio, video-only status, viewer reconnects, and host-only controls from separate LAN computers before claiming the feature works.
+Tests use Node's built-in `node:test` module; no coverage threshold is established. Name tests `*.test.js` and run them with `npm test`. Cover signaling roles, the three-viewer limit, message routing, and cleanup. Manually verify screen motion, computer audio, video-only status, and viewer reconnects from separate LAN computers before claiming the full feature works.
 
 ## Commit & Pull Request Guidelines
 

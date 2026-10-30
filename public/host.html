@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Host · LAN Screen Share</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/host.js" defer></script>
+</head>
+<body>
+  <main class="shell">
+    <header class="heading">
+      <span class="eyebrow">LAN SCREEN SHARE</span>
+      <h1>Share this computer</h1>
+      <p>Choose your primary screen and turn on system audio in the browser's sharing prompt.</p>
+    </header>
+
+    <section class="card controls" aria-label="Sharing controls">
+      <div class="status-row">
+        <span id="status" class="status" role="status" aria-live="polite">Ready to share</span>
+        <span id="audio-status" class="pill">Audio not started</span>
+      </div>
+      <p id="viewer-count" class="count">0 viewers connected</p>
+      <label class="check-row"><input id="include-audio" type="checkbox" checked> Include computer audio</label>
+      <div class="actions">
+        <button id="start-button" type="button">Start sharing</button>
+        <button id="stop-button" type="button" class="secondary" disabled>Stop sharing</button>
+      </div>
+      <p class="hint">Keep this tab open while sharing. Viewers open <code id="viewer-url">http://&lt;your-LAN-IP&gt;:3000/</code>.</p>
+    </section>
+
+    <section class="card preview-card" aria-label="Screen preview">
+      <div class="section-heading"><h2>Preview</h2><span>Only you see this preview</span></div>
+      <div class="video-frame"><video id="preview" autoplay muted playsinline></video></div>
+    </section>
+  </main>
+</body>
+</html>

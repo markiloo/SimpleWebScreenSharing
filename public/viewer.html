@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Watch · LAN Screen Share</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/viewer.js" defer></script>
+</head>
+<body>
+  <main class="shell viewer-shell">
+    <header class="heading">
+      <span class="eyebrow">LAN SCREEN SHARE</span>
+      <h1>Watch the screen</h1>
+      <p>Live video and computer sound from the host on your local network.</p>
+    </header>
+
+    <section class="card" aria-label="Live stream">
+      <div class="status-row">
+        <span id="status" class="status" role="status" aria-live="polite">Ready to watch</span>
+        <span id="audio-status" class="pill">Audio unknown</span>
+      </div>
+      <div class="video-frame"><video id="stream" autoplay playsinline controls></video></div>
+      <div class="actions">
+        <button id="watch-button" type="button">Watch</button>
+        <button id="play-button" type="button" class="secondary" hidden>Play / enable sound</button>
+        <button id="leave-button" type="button" class="secondary" disabled>Leave</button>
+      </div>
+      <p class="hint">Use the video controls to adjust volume. The host must start sharing first.</p>
+    </section>
+  </main>
+</body>
+</html>
