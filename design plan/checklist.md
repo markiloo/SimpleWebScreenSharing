@@ -34,9 +34,9 @@
 
 - [x] Write a README with installation, startup, the host URL, and the LAN viewer URL.
 - [x] Explain how to find the host's LAN IP and allow port 3000 through Windows Firewall if needed.
-- [ ] Verify screen motion and computer audio from another LAN computer using desktop Chrome or Edge.
-- [ ] Check that normal LAN playback stays within roughly 10 seconds of the host screen without repeated stalls; adjust capture quality if needed.
-- [ ] Verify that video-only sharing works and clearly reports missing audio.
+- [x] Verify screen motion and computer audio from another LAN computer using desktop Chrome or Edge.
+- [x] Check that normal LAN playback stays within roughly 10 seconds of the host screen without repeated stalls; adjust capture quality if needed.
+- [x] Verify that video-only sharing works and clearly reports missing audio.
 - [x] Verify three simultaneous viewers, fourth-viewer rejection, viewer refresh, and freed slots after disconnect in Edge browser tabs. Signaling behavior is also covered by `npm test`.
-- [ ] Verify that Stop sharing and browser capture ending disconnect viewers and release capture tracks.
+- [x] Verify that Stop sharing and browser capture ending disconnect viewers and release capture tracks.
 - [x] Verify a LAN viewer cannot access host controls or claim the host signaling role.
