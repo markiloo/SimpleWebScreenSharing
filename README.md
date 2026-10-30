@@ -2,6 +2,10 @@
 
 Share one Windows computer screen and its system audio with up to three desktop viewers on the same local network. The host uses Chrome or Edge's screen picker; viewers use Chrome or Edge. The app uses WebRTC directly over the LAN and favors smooth video. A delay of roughly 10 seconds is acceptable, but no artificial delay is added.
 
+## Background
+
+This project started with a practical problem: I was having trouble casting my computer screen to my TV. I created LAN Screen Share to explore another way to view a computer's screen on a larger display over the local network. It is also part of my practice using AI agents in a class, where I applied what I was learning to build a tool aimed at solving that problem. The project is a learning exercise as well as an attempt at a useful workaround.
+
 ## Requirements
 
 - Windows host with Node.js 20 or newer and current Chrome or Edge
