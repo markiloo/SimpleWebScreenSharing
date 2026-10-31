@@ -5,6 +5,7 @@ const audioLabel = document.querySelector('#audio-status');
 const viewerCountLabel = document.querySelector('#viewer-count');
 const preview = document.querySelector('#preview');
 const includeAudio = document.querySelector('#include-audio');
+const videoQuality = document.querySelector('#video-quality');
 const statusDot = document.querySelector('#status-dot');
 const previewCard = document.querySelector('#preview-card');
 const viewerUrlLabel = document.querySelector('#viewer-url');
@@ -54,6 +55,7 @@ function stopSharing(message = 'Sharing stopped') {
   startButton.disabled = false;
   stopButton.disabled = true;
   includeAudio.disabled = false;
+  videoQuality.disabled = false;
   viewerCountLabel.textContent = '0';
   audioLabel.textContent = 'Audio not started';
   audioLabel.className = 'pill';
@@ -163,6 +165,7 @@ async function startSharing() {
   starting = true;
   startButton.disabled = true;
   includeAudio.disabled = true;
+  videoQuality.disabled = true;
   setStatus(includeAudio.checked ? 'Choose your primary screen and enable system audio…' : 'Choose your primary screen…', 'pending');
   try {
     const stream = await navigator.mediaDevices.getDisplayMedia({
@@ -176,6 +179,17 @@ async function startSharing() {
     if (!videoTrack || (videoTrack.getSettings().displaySurface && videoTrack.getSettings().displaySurface !== 'monitor')) {
       stream.getTracks().forEach((track) => track.stop());
       throw new Error('Choose Entire Screen in the sharing prompt.');
+    }
+    const maxHeight = Number(videoQuality.value) || 720;
+    const { width, height } = videoTrack.getSettings();
+    const aspectRatio = width && height ? width / height : 16 / 9;
+    try {
+      await videoTrack.applyConstraints({
+        width: { max: Math.round(maxHeight * aspectRatio) },
+        height: { max: maxHeight },
+      });
+    } catch {
+      /* Keep the browser's capture settings if downscaling is unsupported. */
     }
     captureStream = stream;
     videoTrack.addEventListener('ended', () => stopSharing('Screen capture ended'));

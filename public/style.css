@@ -379,6 +379,42 @@ p {
   cursor: not-allowed;
 }
 
+.quality-control {
+  display: grid;
+  gap: 6px;
+  margin-top: 14px;
+  color: var(--ink);
+  font-size: .94rem;
+  font-weight: 650;
+}
+
+.quality-control select {
+  width: 100%;
+  min-height: 42px;
+  padding: 8px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: .92rem;
+}
+
+.quality-control select:focus-visible {
+  outline: 2px solid var(--accent-hover);
+  outline-offset: 2px;
+}
+
+.quality-control select:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+.quality-control .hint {
+  margin: 0;
+  font-weight: 400;
+}
+
 .actions {
   margin-top: 18px;
 }

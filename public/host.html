@@ -40,6 +40,16 @@
 
         <label class="check-row"><input id="include-audio" type="checkbox" checked> Include computer audio</label>
 
+        <label class="quality-control" for="video-quality">
+          <span>Video quality</span>
+          <select id="video-quality" name="video-quality">
+            <option value="480">480p</option>
+            <option value="720" selected>720p (Recommended)</option>
+            <option value="1080">1080p</option>
+          </select>
+          <span class="hint">Sets the maximum sharing resolution.</span>
+        </label>
+
         <div class="actions">
           <button id="start-button" type="button">Start sharing</button>
           <button id="stop-button" type="button" class="secondary" disabled>Stop sharing</button>
