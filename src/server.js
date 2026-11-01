@@ -6,6 +6,7 @@ const path = require('node:path');
 const { URL } = require('node:url');
 const { WebSocket, WebSocketServer } = require('ws');
 
+//web server settings
 const MAX_VIEWERS = 3;
 const DEFAULT_PORT = 3000;
 const PUBLIC_DIR = path.join(__dirname, '..', 'public');
