@@ -36,6 +36,6 @@ This runs signaling and access-control tests. For a different port, set `PORT` b
 - **No audio:** Reselect Entire Screen and enable system audio in the browser's prompt. The browser may not offer system audio for every display source.
 - **Video does not play:** Click **Play / enable sound** on the viewer page.
 - **Connection fails:** Confirm both computers are on the same LAN and client isolation or VPN routing is not blocking peer connections.
-- **Choppy video:** Check Wi-Fi signal and reduce other network traffic. The app caps capture near 20 frames per second and video at 3 Mbps per viewer.
+- **Choppy video:** Check Wi-Fi signal and reduce other network traffic. The app caps capture at 24 frames per second (typically 22–24 in practice) and video at 3 Mbps per viewer.
 
 The app has no recording, password, internet relay, or mobile-browser support. Browser permission is required for every new sharing session. See [the implementation checklist](design%20plan/checklist.md) for acceptance checks.

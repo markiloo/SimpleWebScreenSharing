@@ -83,7 +83,7 @@ async function createPeer(viewerId) {
         const parameters = sender.getParameters();
         if (parameters.encodings?.length) {
           parameters.encodings[0].maxBitrate = 3_000_000;
-          parameters.encodings[0].maxFramerate = 27;
+          parameters.encodings[0].maxFramerate = 24;
           try { await sender.setParameters(parameters); } catch { /* Browser defaults remain usable. */ }
         }
       } else if (track.kind === 'audio') {
@@ -169,7 +169,7 @@ async function startSharing() {
   setStatus(includeAudio.checked ? 'Choose your primary screen and enable system audio…' : 'Choose your primary screen…', 'pending');
   try {
     const stream = await navigator.mediaDevices.getDisplayMedia({
-      video: { displaySurface: 'monitor', frameRate: { ideal: 22, max: 27 } },
+      video: { displaySurface: 'monitor', frameRate: { ideal: 24, max: 24 } },
       audio: includeAudio.checked,
       systemAudio: includeAudio.checked ? 'include' : 'exclude',
       monitorTypeSurfaces: 'include',
