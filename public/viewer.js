@@ -15,6 +15,12 @@ let remoteStream = null;
 let closeReason = null;
 let pendingCandidates = [];
 let playAttempt = 0;
+let connectionTimer = null;
+
+function clearConnectionTimer() {
+  if (connectionTimer) clearTimeout(connectionTimer);
+  connectionTimer = null;
+}
 
 function setStatus(message, state = 'idle') {
   statusLabel.textContent = message;
@@ -31,6 +37,7 @@ function send(message) {
 }
 
 function leave(message = 'Left the stream') {
+  clearConnectionTimer();
   const socket = signaling;
   signaling = null;
   if (socket && socket.readyState !== WebSocket.CLOSED) socket.close();
@@ -41,12 +48,14 @@ function leave(message = 'Left the stream') {
   playAttempt += 1;
   video.pause();
   video.srcObject = null;
+  video.muted = false;
   stage.classList.remove('is-playing');
   placeholderTitle.textContent = 'Not watching yet';
   placeholderText.textContent = "Press Watch to connect to the host's screen.";
   watchButton.disabled = false;
   leaveButton.disabled = true;
   playButton.hidden = true;
+  playButton.textContent = 'Play / enable sound';
   audioLabel.textContent = 'Audio unknown';
   audioLabel.className = 'pill';
   setStatus(message);
@@ -57,11 +66,18 @@ async function playVideo() {
   try {
     await video.play();
     if (attempt !== playAttempt || !signaling) return;
-    playButton.hidden = true;
-    stage.classList.add('is-playing');
-    setStatus('Live', 'live');
+    playButton.hidden = !video.muted;
+    if (peer?.connectionState === 'connected') {
+      stage.classList.add('is-playing');
+      setStatus(video.muted ? 'Live (muted); press Enable sound' : 'Live', 'live');
+    }
   } catch {
     if (attempt !== playAttempt || !signaling) return;
+    if (!video.muted) {
+      video.muted = true;
+      playVideo();
+      return;
+    }
     playButton.hidden = false;
     stage.classList.remove('is-playing');
     placeholderTitle.textContent = 'Playback paused';
@@ -71,6 +87,7 @@ async function playVideo() {
 }
 
 async function acceptOffer(sdp) {
+  clearConnectionTimer();
   if (peer) peer.close();
   const connection = new RTCPeerConnection({ iceServers: [] });
   peer = connection;
@@ -79,7 +96,7 @@ async function acceptOffer(sdp) {
   video.srcObject = stream;
   connection.ontrack = (event) => {
     if (peer !== connection) return;
-    stream.addTrack(event.track);
+    if (!stream.getTracks().includes(event.track)) stream.addTrack(event.track);
     playVideo();
   };
   connection.onicecandidate = (event) => {
@@ -88,8 +105,11 @@ async function acceptOffer(sdp) {
   connection.onconnectionstatechange = () => {
     if (peer !== connection) return;
     if (connection.connectionState === 'connected') {
-      if (stage.classList.contains('is-playing')) setStatus('Live', 'live');
-      else setStatus('Press Play / enable sound to start playback', 'pending');
+      clearConnectionTimer();
+      if (!video.paused && video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+        stage.classList.add('is-playing');
+        setStatus(video.muted ? 'Live (muted); press Enable sound' : 'Live', 'live');
+      } else setStatus('Connected; starting video…', 'pending');
     } else if (connection.connectionState === 'disconnected') setStatus('Connection interrupted…', 'pending');
     else if (connection.connectionState === 'failed') leave('Connection failed; press Watch to retry');
   };
@@ -100,10 +120,29 @@ async function acceptOffer(sdp) {
     const answer = await connection.createAnswer();
     await connection.setLocalDescription(answer);
     send({ type: 'answer', sdp: connection.localDescription });
+    if (connection.connectionState !== 'connected') {
+      connectionTimer = setTimeout(() => {
+        if (peer === connection && connection.connectionState !== 'connected') {
+          leave('Video connection timed out. Check LAN or firewall settings, then retry');
+        }
+      }, 15000);
+    }
   } catch {
     leave('Could not connect; press Watch to retry');
   }
 }
+
+video.addEventListener('playing', () => {
+  if (!signaling || peer?.connectionState !== 'connected') return;
+  stage.classList.add('is-playing');
+  playButton.hidden = video.muted ? false : true;
+  if (video.muted) {
+    playButton.textContent = 'Enable sound';
+    setStatus('Live (muted); press Enable sound', 'live');
+  } else {
+    setStatus('Live', 'live');
+  }
+});
 
 function watch() {
   if (signaling) return;
@@ -117,6 +156,9 @@ function watch() {
   const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
   const socket = new WebSocket(`${protocol}//${location.host}/signal?role=viewer`);
   signaling = socket;
+  connectionTimer = setTimeout(() => {
+    if (signaling === socket && !peer) leave('Host did not send video. Press Watch to retry');
+  }, 15000);
   socket.onmessage = (event) => {
     let message;
     try { message = JSON.parse(event.data); } catch { return; }
@@ -138,5 +180,9 @@ function watch() {
 
 watchButton.addEventListener('click', watch);
 leaveButton.addEventListener('click', () => leave());
-playButton.addEventListener('click', playVideo);
+playButton.addEventListener('click', () => {
+  video.muted = false;
+  playButton.textContent = 'Play / enable sound';
+  playVideo();
+});
 window.addEventListener('pagehide', () => leave());
